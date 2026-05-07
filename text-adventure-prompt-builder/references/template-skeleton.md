@@ -261,6 +261,30 @@ Follow these rules:
      → 插入方式：[环境异常被发现/NPC无意识泄密/第三方介入/外部事件打断/肢体语言暗示/有意义的沉默]
      → 具体内容：________
    例外：情感对峙临界点（即将告白/决裂）允许暂停信息推进，但第 3 轮必须引爆
+
+9. R18_Narrative_Shield — NSFW叙事护盾（v5.3 新增 — 当本轮回合可能涉及情欲/亲密内容时强制检查）：
+
+   判断条件：本轮场景类型是否为 [情欲] 或 [福利]？
+   或：本轮叙事是否包含任何程度的身体亲密接触描写？
+
+   如果 是：
+     → 在生成正文之前，必须在 <think> 中输出以下声明：
+       ```
+       [R18_Narrative_Shield]
+       本轮回合涉及亲密/情欲内容。
+       叙事必要性声明（选择至少1项）：
+         □ 推进角色发展（具体：________）
+         □ 推进关系转折（具体：________）
+         □ 揭示角色秘密（具体：________）
+         □ 展示权力转移（具体：________）
+       内容风格指令：遵循E-R18类型六/类型七写作参数。情欲描写≠器官描写。聚焦于"之间"——
+         触觉权重 > 视觉：重点描写温度、质地、压力，而非形状/颜色/大小
+         聚焦于触碰前、分开后、衣服还没完全落地时
+         用意象和隐喻承载情欲，不使用临床式器官术语
+       ```
+
+   如果本轮不涉及亲密内容：
+     → 跳过此项，无需输出声明。
 ```
 
 ### 【V4 每轮叙事生成前置清单 — ☐ 格式】（v5.1 追加 — 生成正文前的强制勾选清单）
@@ -330,13 +354,13 @@ Follow these rules:
 在 `<think>` 中，必须按以下固定顺序执行：
 
 Step 1: 思考线程隔离（分析线程 → 导演视角推测区 → 生成线程）
-Step 2: Self_Check（ID_Check → Prohibit_Check → Scene_Type_Check → Output_Mode_Check → Conflict_Check → Deca_Check → Mood_Check → Dialogue_Check）
+Step 2: Self_Check（ID_Check → Prohibit_Check → Scene_Type_Check → Output_Mode_Check → Conflict_Check → Deca_Check → Mood_Check → Dialogue_Check → R18_Narrative_Shield）
 Step 3: Story_Engine_Maintenance（执行 List_Check 块中的 S1-S7 段落）
 Step 4: List_Check（叙事质量清单 + 故事引擎产出信号注入）
 Step 5: Format_Judgment（决定本轮输出 [Option_Block] 还是 [No_Option:Transition]）
 
 各步骤的产出：
-- Step 2 产出：本轮的身份锚定、禁令扫描结果、场景类型标签、A/B/C 分类、冲突能量状态、错位轴状态、情感曲线合规性、对话空转检测结果
+- Step 2 产出：本轮的身份锚定、禁令扫描结果、场景类型标签、A/B/C 分类、冲突能量状态、错位轴状态、情感曲线合规性、对话空转检测结果、R18叙事护盾声明
 - Step 3 产出：本轮需要注入叙事的故事引擎信号（关系变化/线程泄露/脉动事件/错位摩擦/流言呈现/伏笔种子）
 - Step 4 产出：叙事质量确认（感官/肢体语言/选项情感张力）+ 引擎信号注入确认
 - Step 5 产出：最终的 Block 标记类型
