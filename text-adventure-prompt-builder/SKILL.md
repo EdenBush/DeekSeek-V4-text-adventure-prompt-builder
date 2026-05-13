@@ -1,4 +1,4 @@
-# 文字冒险游戏提示词构建器 (Text Adventure Prompt Builder) — v5.5.2 防泄漏加固版
+# 文字冒险游戏提示词构建器 (Text Adventure Prompt Builder) — v5.5.3 think标签防泄漏热修版
 
 ## 技能概述
 
@@ -7,6 +7,8 @@
 **v5.5.1 功能增强**：电影模式新增规则6"蒙太奇小节"，支持场景收束时的一气呵成叙事+导演评论音轨；拓宽电影模式激活关键词（镜头感/蒙太奇/文笔细腻等自然表述）。
 
 **v5.5.2 防泄漏加固**：新增防泄漏强制隔离指令（fixed-core.md 的 FIXED SECTION D）；Self_Check 内部增加优先级标注（🔴🟡🟢）防止 V4 注意力稀释；新增正文第一句检查机制；质量自查新增内部内容泄漏检测项。
+
+**v5.5.3 热修复**：针对 `<think>` 标签泄漏到正文的问题，新增语法级标签隔离禁令，正文全文扫描 think 标签，检测到即重新生成。
 
 **v5.5 核心升级**：新增动态术语表系统（步骤 0.9.1），精炼用户自定义概念并注入提示词"共享语言"章节；格式确认询问（步骤 0.6 追加）；think 内部状态维护精简格式指引（template-skeleton.md 的 Self_Check 追加）；fixed-core 物理拆分（template-skeleton.md 中 A-E 移入独立文件）。
 
@@ -514,8 +516,10 @@ Must_Do:
   - sensory_description: [环境氛围/生理反应/感官细节]
   - npc_micro_expression: [肢体语言/语调变化/视线落点]
   - scene_type_check_before_reply: True
+  - think_tag_isolation: True
 Status_Check_Before_Reply: True
 ``
+# v5.5.3 新增 think_tag_isolation：<think> 标签仅在内部推理阶段使用，正文中绝对不可出现 <think> 或 </think>
 
 > **构造说明**：此段使用 YAML 格式而非自然语言段落。YAML 的结构化标记在 V4 的压缩注意力机制中比自然语言段落保持更高权重，不易被后续叙事洪流稀释。`{{男主姓名}}` 在"禁止代理"相关规则中需要替换。
 >
@@ -771,6 +775,7 @@ Status_Check_Before_Reply: True
 
 [v5.5.2 内部内容泄漏检测] ← 新增
 ❌ 检查生成的提示词正文中是否出现以下内部标记：
+   □ **任何 `<think>` 或 `</think>` 标签出现在正文中**（v5.5.3 新增，此为最高优先级泄漏检测）
    □ 任何 `<think>` 或 `</think>` 标签（应仅出现在内部，不应在正文中可见）
    □ "Self_Check" 或 "List_Check" 字样
    □ ☐ 复选框格式
