@@ -1,4 +1,4 @@
-# 文字冒险游戏提示词构建器 (Text Adventure Prompt Builder) — v5.4.1 电影级主角代入优化版
+# 文字冒险游戏提示词构建器 (Text Adventure Prompt Builder) — v5.5 精炼均衡版
 
 ## 技能概述
 
@@ -6,6 +6,8 @@
 
 **v5.4 核心升级**：新增"电影级主角代入模式"，含五大专项叙事规则、电影镜头式叙事格式、V4自检集成及质量自查清单。此模式为纯叙事风格叠加层，不影响现有模块。
 **v5.4.1 优化**：规则4裂隙样例升级为结构化清单（提升V4压缩注意力下存活率）；Self_Check禁止清单统一（消除规范质量轻微不一致）；规则4双重功能增加可执行性自检；Protagonist_Agent_Check增加模式激活前置条件。
+
+**v5.5 精炼升级**：审视 v5.1-v5.4 积累的机制，做减法而非加法——移除模块嵌入占位符残留、精简 ID_Check、新增 V4 上下文布局策略（构造者知识，不增加提示词 token）。核心原则：Self_Check + List_Check + 原子化护盾三层体系已在每轮 think 中（SWA 128 token 滑窗全精度区）完成身份锚定与规则复检，无需额外周期性机制。提示词越精简，V4 的 CSA top-k 检索越高效。
 
 **v5.3 核心升级**：新增 R18_Narrative_Shield 机制——在 Self_Check 中增加第9步强制检查，DM 在生成任何情欲/亲密内容前，必须在 think 中输出叙事必要性声明。此声明为 V4 安全线提供叙事合法性判断依据，将判定标准从"是否色情"切换为"是否有叙事必要"，大幅降低 R18 内容在 DeepSeek 网页端被撤回的概率。
 
@@ -480,6 +482,19 @@ Status_Check_Before_Reply: True
 >
 > **输出格式指示**：此护盾以**原始 YAML 格式**输出到最终提示词中——**不加 Markdown 代码块包裹**（\`\`\`yaml \`\`\`）。直接以换行后的纯 YAML 文本嵌入提示词最开头，前后用空行隔开。不要将其视为"示例代码"，它本身就是提示词的一部分。
 
+> **V4 上下文布局策略（v5.5 新增）**：提示词中各区域在 V4 的 CSA+HCA 混合注意力机制下的存活率不同——V4 的注意力存在三层结构：SWA 滑窗（128 token，全精度）、CSA 覆盖区（4:1 压缩+top-k 稀疏检索，中精度）、HCA 覆盖区（128:1 压缩+全量注意力，低精度）。构造提示词时应按以下策略分配内容：
+>
+> | 提示词位置 | V4 注意力精度 | 存活率 | 应放置内容 |
+> |-----------|------------|--------|----------|
+> | 最开头（第零层护盾） | Attention Sink + 首层 HCA | ★★★★★ | 身份定义 + 禁令清单 |
+> | 前 2000 token（SECTION A-D） | HCA 128:1 → CSA 4:1 | ★★★★☆ | 思维模式要求 + 特殊模式 + 深度推理要求 |
+> | 前 2000-5000 token（SECTION E, E-BIS） | HCA → CSA 覆盖 | ★★★★☆ | 核心行为规则 + 叙事节奏控制 |
+> | 中间区 5000-15000 token（E-TER, E-QUAT 等） | CSA 4:1 + top-k 索引 | ★★★☆☆ | 场景类型写作参数 + 情感曲线管理 |
+> | 后部区 15000+ token（角色设定） | HCA 128:1 激进压缩 | ★★☆☆☆ | 角色设定 → 需靠检索标签 + KV Cache 索引补偿 |
+> | 每轮 think 内的 Self_Check | SWA 滑窗（128 token） | ★★★★★ | 身份确认 + 禁令扫描 + 规则复检 |
+>
+> **关键策略**：提示词开头的身份护盾和结构化规则利用 attention sink 获得高权重；每轮 think 中的 Self_Check + List_Check 在 SWA 滑窗内保持全精度，天然对抗 HCA 压缩。无需额外周期性机制——现有三层体系（护盾 + Self_Check + List_Check）已提供完整覆盖。
+
 --- 第零层之后，拼接以下固定区和可变区： ---
 
 固定区 — 按步骤0.7模块矩阵选择性包含：
@@ -507,6 +522,8 @@ Status_Check_Before_Reply: True
 18. [if E-HAREM激活] 🆕 后宫关系管理 ← FIXED SECTION E-HAREM（v5.0新增）
 19. [if E-ECCHI激活] 🆕 幸运色狼/福利事件系统 ← FIXED SECTION E-ECCHI（v5.0新增）
 
+> **嵌入规则**：上述每个模块的"← FIXED SECTION E-XXX"标记表示：在构造最终提示词时，必须从 template-skeleton.md 中读取该固定区的**完整文本**，替换掉括号中的摘要注释行。最终提示词中不应出现"参见template-skeleton.md"字样——所有激活模块的规则文本必须全文嵌入。
+
 ---分隔线---
 
 可变区 — 始终包含全部：
@@ -525,6 +542,55 @@ Status_Check_Before_Reply: True
 28. ## 十二、开场引导 ← VARIABLE SECTION K
 29. 结尾指令：【请在回复中重新从头进入详细描写游戏开场剧情】
 ```
+
+> **模块规则全文嵌入说明**（v5.4.1 修复）
+>
+> 构造最终提示词时，DM角色介绍段之后必须将以下所有激活模块的**完整规则文本**嵌入。每个模块的规则文本从 template-skeleton.md 的对应 FIXED SECTION 读取，全文粘贴，不做任何摘要或省略。以下为嵌入位置说明：
+
+【叙事节奏控制系统 — E-BIS】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-BIS 读取）
+
+【场景类型写作指南 — E-TER】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-TER 读取）
+
+【电影级主角代入模式 — E-CINEMA】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-CINEMA 读取）
+
+【情感曲线管理 — E-QUAT】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-QUAT 读取）
+
+【弹性陷阱机制 — E-QUAT-BIS】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-QUAT-BIS 读取）
+
+【选择后果追踪系统 — E-SEPT】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-SEPT 读取，仅限think）
+
+【关系微变化系统 — E-OCT】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-OCT 读取，仅限think）
+
+【NPC自主行动时钟 — E-NOV】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-NOV 读取）
+
+【世界脉动系统 — E-PULSE】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-PULSE 读取）
+
+【高级转场技法 — E-TRANS】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-TRANS 读取）
+
+【流言/舆论网络 — E-RUMOR】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-RUMOR 读取，仅限think）
+
+【叙事错位引擎 — E-DECA】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-DECA 读取，仅限think）
+
+【后宫关系管理系统 — E-HAREM】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-HAREM 读取，仅限think）
+
+【NSFW成人内容增强 — E-R18】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-R18 读取）
+
+【幸运色狼/福利事件系统 — E-ECCHI】
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-ECCHI 读取，仅限think）
 
 ### 步骤 3.5：质量自查（构造完成后必须执行 — v3.0 升级）
 
@@ -693,10 +759,10 @@ Status_Check_Before_Reply: True
    → DM 应在分析线程结束后使用导演笔记揣测角色动机，然后将洞察转化为叙事——否则 DM 容易陷入纯客观场记模式
 
 [V4 故事引擎维护检查] ← v5.2 新增 — 故事模块强制维护检查
-❌ 引擎维护缺失：FIXED SECTION D 的 List_Check 中是否包含了 S1-S7 的故事引擎维护项？
+❌ 引擎维护缺失：FIXED SECTION D 的 List_Check 中是否包含了 S1-S8 的故事引擎维护项？
    → v5.1 的 think 被防守性自检占满，故事模块的维护没有强制检查点
-   → v5.2 修复：在 List_Check 中追加 S1-S7，让 V4 像过安检一样执行故事引擎维护
-❌ 故事引擎位置错误：S1-S7 的执行是否放在 Self_Check 和 List_Check 之间？
+   → v5.2 修复：在 List_Check 中追加 S1-S8，让 V4 像过安检一样执行故事引擎维护
+❌ 故事引擎位置错误：S1-S8 的执行是否放在 Self_Check 和 List_Check 之间？
    → 引擎注入需要在叙事生成前完成，否则叙事中无法体现
 ❌ 隐性伏笔检查：S7 是否强制要求每轮埋入未解释的异常？
    → "日常-对话-选项"循环是无趣的根源。强制每轮有一个小异常，故事立刻有悬念
@@ -722,6 +788,12 @@ Status_Check_Before_Reply: True
 □ 是否在关键对话或情感冲击后插入了至少一处纯环境/纯动作白描作为叙事呼吸点？
 □ 每个玩家主动行动后，是否在NPC或环境描写中产生了至少一处即时反馈？
 □ 自检一致性复查：Self_Check 第2步（Prohibit_Check）与第10步（Protagonist_Agent_Check）的禁止清单是否完全一致？（v5.4.1 统一后应为：你走进/你说/你回答道/你感到/你心想/你觉得/你决定/你选择）
+
+[v5.4.1 模块嵌入完整性检查] ← 新增
+❌ 检查最终提示词中是否还存在"参见template-skeleton.md"字样？
+   → 如果存在：说明模块规则未正确嵌入，需要回退到步骤3重新构造
+❌ 检查所有激活的模块（根据步骤0.7的激活矩阵）对应的固定区文本是否已完整出现在最终提示词中？
+   → 抽查3个激活模块（如E-QUAT、E-HAREM、E-R18），确认其完整规则文本已嵌入——而非仅有摘要注释
 
 ### 步骤 4：输出最终提示词并保存文件（v3.3 增强）
 
@@ -935,9 +1007,11 @@ Status_Check_Before_Reply: True
 34. **🆕 导演视角推测区（v5.2 新增）**：在 <think> 的分析线程和生成线程之间，DM 可以进入 [Directors_Corner] 进行第三人称客观动机推测。推测结果仅用于指导叙事设计，不输出到正文。使用 ✅ 客观推断格式，禁止 ❌ 主观内心独白格式。此区域是解决"DM 不敢揣测角色动机导致故事无聊"的关键机制。
 35. **🆕 模块热检查（v5.2 新增）**：FIXED SECTION D 的四步自检已扩展为五步——新增 Module_Trigger_Check。DM 每轮必须扫描所有已激活模块的触发条件。任一模块满足条件→本轮叙事优先安排该模块事件。此机制确保故事模块（E-DECA/E-PULSE/E-HAREM/E-NOV/E-ECCHI）不会被长对话稀释遗忘。
 36. **🆕 冲突预算无聊度检测（v5.2 新增）**：E-BIS 冲突预算池新增两条能量累积规则（连续 2 轮无新信息 +3、连续 3 轮无模块触发 +3）和阈值降级规则（5 轮无模块触发 → 阈值降至 7、8 轮无触发 → 降至 5）。此机制主动防止故事陷入"日常-对话-选项"的空转循环。
-37. **🆕 V4 故事引擎强制维护（v5.2 新增）**：FIXED SECTION D 的每轮清单中必须包含 S1-S7 故事引擎维护项。此维护是"强制勾选"而非"建议执行"——DM 必须逐项检查每个已激活模块是否需要在本轮触发，并在生成叙事前完成注入。think 内部必须按 Step 1-5 固定顺序执行，故事引擎维护（Step 3）位于 Self_Check 之后、List_Check 之前。此优化利用 V4 的清单执行特性，将故事模块从"希望 DM 记得调用"变成"每轮必须过一遍的程序"，解决 v5.1 故事无聊的问题。
+37. **🆕 V4 故事引擎强制维护（v5.2 新增）**：FIXED SECTION D 的每轮清单中必须包含 S1-S8 故事引擎维护项。此维护是"强制勾选"而非"建议执行"——DM 必须逐项检查每个已激活模块是否需要在本轮触发，并在生成叙事前完成注入。think 内部必须按 Step 1-5 固定顺序执行，故事引擎维护（Step 3）位于 Self_Check 之后、List_Check 之前。此优化利用 V4 的清单执行特性，将故事模块从"希望 DM 记得调用"变成"每轮必须过一遍的程序"，解决 v5.1 故事无聊的问题。
 
 38. **🆕 V4 R18防撤回机制（v5.3 新增）**：FIXED SECTION D 的 Self_Check 中新增第9步 R18_Narrative_Shield。在生成任何情欲/亲密内容之前，DM 必须在 <think> 中输出叙事必要性声明——明确本轮内容服务于角色发展/关系转折/秘密暴露/权力转移中的哪一项，并确认内容风格遵循 E-R18 的"之间"法则（触觉权重>视觉、聚焦触碰前/分开后/衣服未落地时、用意象和隐喻承载情欲、禁止临床式器官术语）。此声明在 think 中先行，为 V4 安全线提供叙事合法性判断的依据，大幅降低 R18 内容被网页端撤回的概率。
+
+39. **🆕 V4 上下文布局策略（v5.5 新增）**：构造提示词时，按 V4 注意力三层结构（SWA 滑窗/CSA 4:1/HCA 128:1）分配内容位置——最开头放身份护盾 + 禁令（attention sink 保护），前 2000 token 放核心规则，中间区放场景写作参数，角色设定靠检索标签 + KV Cache 索引补偿。现有 Self_Check + List_Check 体系已在每轮 think（SWA 滑窗全精度区）完成身份锚定与规则复检——无需额外机制。参见步骤3中的 V4 上下文布局策略表。
 
 ### 调用触发规则
 
