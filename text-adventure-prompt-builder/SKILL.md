@@ -1,4 +1,4 @@
-# 文字冒险游戏提示词构建器 (Text Adventure Prompt Builder) — v5.5 精炼均衡版
+# 文字冒险游戏提示词构建器 (Text Adventure Prompt Builder) — v5.4.2 模块嵌入+节奏控制修复版
 
 ## 技能概述
 
@@ -543,54 +543,57 @@ Status_Check_Before_Reply: True
 29. 结尾指令：【请在回复中重新从头进入详细描写游戏开场剧情】
 ```
 
-> **模块规则全文嵌入说明**（v5.4.1 修复）
+> **模块规则全文嵌入说明**（v5.4.2 强制嵌入）
+>
+> **嵌入指令**：以下每个模块的规则文本必须从 template-skeleton.md 中读取完整内容并嵌入此处。
+> 最终提示词中不得出现"参见 template-skeleton.md"字样——所有激活模块的规则必须全文嵌入。
 >
 > 构造最终提示词时，DM角色介绍段之后必须将以下所有激活模块的**完整规则文本**嵌入。每个模块的规则文本从 template-skeleton.md 的对应 FIXED SECTION 读取，全文粘贴，不做任何摘要或省略。以下为嵌入位置说明：
 
 【叙事节奏控制系统 — E-BIS】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-BIS 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-BIS 读取并全文植入本提示词）
 
 【场景类型写作指南 — E-TER】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-TER 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-TER 读取并全文植入本提示词）
 
 【电影级主角代入模式 — E-CINEMA】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-CINEMA 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-CINEMA 读取并全文植入本提示词）
 
 【情感曲线管理 — E-QUAT】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-QUAT 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-QUAT 读取并全文植入本提示词）
 
 【弹性陷阱机制 — E-QUAT-BIS】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-QUAT-BIS 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-QUAT-BIS 读取并全文植入本提示词）
 
 【选择后果追踪系统 — E-SEPT】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-SEPT 读取，仅限think）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-SEPT 读取并全文植入本提示词，仅限think）
 
 【关系微变化系统 — E-OCT】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-OCT 读取，仅限think）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-OCT 读取并全文植入本提示词，仅限think）
 
 【NPC自主行动时钟 — E-NOV】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-NOV 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-NOV 读取并全文植入本提示词）
 
 【世界脉动系统 — E-PULSE】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-PULSE 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-PULSE 读取并全文植入本提示词）
 
 【高级转场技法 — E-TRANS】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-TRANS 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-TRANS 读取并全文植入本提示词）
 
 【流言/舆论网络 — E-RUMOR】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-RUMOR 读取，仅限think）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-RUMOR 读取并全文植入本提示词，仅限think）
 
 【叙事错位引擎 — E-DECA】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-DECA 读取，仅限think）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-DECA 读取并全文植入本提示词，仅限think）
 
 【后宫关系管理系统 — E-HAREM】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-HAREM 读取，仅限think）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-HAREM 读取并全文植入本提示词，仅限think）
 
 【NSFW成人内容增强 — E-R18】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-R18 读取）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-R18 读取并全文植入本提示词）
 
 【幸运色狼/福利事件系统 — E-ECCHI】
-（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-ECCHI 读取，仅限think）
+（完整规则文本已嵌入——从 template-skeleton.md FIXED SECTION E-ECCHI 读取并全文植入本提示词，仅限think）
 
 ### 步骤 3.5：质量自查（构造完成后必须执行 — v3.0 升级）
 
@@ -789,11 +792,11 @@ Status_Check_Before_Reply: True
 □ 每个玩家主动行动后，是否在NPC或环境描写中产生了至少一处即时反馈？
 □ 自检一致性复查：Self_Check 第2步（Prohibit_Check）与第10步（Protagonist_Agent_Check）的禁止清单是否完全一致？（v5.4.1 统一后应为：你走进/你说/你回答道/你感到/你心想/你觉得/你决定/你选择）
 
-[v5.4.1 模块嵌入完整性检查] ← 新增
-❌ 检查最终提示词中是否还存在"参见template-skeleton.md"字样？
-   → 如果存在：说明模块规则未正确嵌入，需要回退到步骤3重新构造
-❌ 检查所有激活的模块（根据步骤0.7的激活矩阵）对应的固定区文本是否已完整出现在最终提示词中？
-   → 抽查3个激活模块（如E-QUAT、E-HAREM、E-R18），确认其完整规则文本已嵌入——而非仅有摘要注释
+[v5.4.2 模块嵌入完整性检查] ← 新增
+❌ 检查最终提示词中是否还存在"参见 template-skeleton.md"字样？
+   → 如果存在：说明模块规则未正确嵌入，回到步骤 3 重新构造
+❌ 抽查 3 个激活模块（如 E-QUAT、E-HAREM、E-R18），确认其完整规则文本已出现在最终提示词中
+   → 如果任一模块只有摘要而无完整规则文本：回到步骤 3 重新嵌入
 
 ### 步骤 4：输出最终提示词并保存文件（v3.3 增强）
 
